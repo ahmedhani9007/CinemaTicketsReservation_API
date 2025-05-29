@@ -5,6 +5,8 @@ from rest_framework.decorators import api_view
 from .serializers import GuestSerializer,MovieSerializer,ReservationSerializer
 from rest_framework.response import Response
 from rest_framework import status,filters
+from rest_framework.views import APIView
+from django.http import Http404
 # Create your views here.
 
 #1 without Rest and no model query FBV
@@ -75,3 +77,45 @@ def FBV_pk(request,pk):
     elif  request.method =='DELETE':
         guest.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
+# CBV Class Based View
+#4.1 List and Create == GET and POST
+class CBV_List(APIView):
+    def get(self,request):
+        guests = Guest.objects.all()
+        serializer = GuestSerializer(guests,many = True)
+        return Response(serializer.data)
+    
+    def post(self,request):
+        serializer = GuestSerializer(data = request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data,status=status.HTTP_201_CREATED)
+        return Response(serializer.data,status=status.HTTP_400_BAD_REQUEST)
+    
+# GET PUT DELETE Classs Based View === pk
+class CBV_pk(APIView):
+
+    def get_object(self,pk):
+        try:
+            return Guest.objects.get(pk=pk)
+        except Guest.DoesNotExist:
+            raise Http404
+    def get(self,request,pk):
+        guest = self.get_object(pk)
+        serializer = GuestSerializer(guest)
+        return Response(serializer.data,)
+    def put(self,request,pk):
+        guest = self.get_object(pk)
+        serializer = GuestSerializer(guest, data= request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self,request,pk):
+        guest = self.get_object()
+        guest.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    
