@@ -26,6 +26,8 @@ urlpatterns = [
 
     # 3 GET POST from rest framework function based view @api_view 
     path('rest/fbv/',views.FBV_List),
+    path('rest/fbv/<int:pk>',views.FBV_pk),
+
 
 
 
